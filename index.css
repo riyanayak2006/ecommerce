@@ -1,0 +1,110 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Montserrat";
+}
+
+nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  height: 10vh;
+  color: #df5555;
+}
+h1 {
+  font-family: "French Script MT";
+}
+ul {
+  display: flex;
+  gap: 20px;
+  list-style: none;
+}
+a {
+  text-decoration: none;
+  color: #df5555;
+}
+h1:hover,
+a:hover {
+  color: rgb(121, 121, 121);
+}
+h1,
+#icons {
+  cursor: pointer;
+}
+
+main > img {
+  width: 100%;
+  object-fit: cover;
+  height: 90vh;
+}
+
+.latest {
+  background-color: #df5555;
+  text-align: center;
+}
+.latest h1 {
+  color: white;
+  font-size: 90px;
+}
+.productList {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+}
+
+.product {
+  width: 250px;
+  border-radius: 15px;
+  border: 2px solid #fc686899;
+  margin: 10px;
+}
+.product img {
+  width: 250px;
+  object-fit: contain;
+  border-radius: 15px 15px 0 0;
+  padding: 5px;
+}
+h2,
+p {
+  color: white;
+}
+.prdctHeading {
+  background-color: #df5555;
+  padding: 10px;
+  border-radius: 0 0 10px 10px;
+}
+.prdctHeading button {
+  cursor: pointer;
+  padding: 10px;
+  border-radius: 10px;
+  border: none;
+  margin-top: 10px;
+  width: 100%;
+}
+.prdctHeading:hover {
+  background-color: #fc686899;
+}
+.price {
+  display: flex;
+  justify-content: space-between;
+}
+h3 {
+  color: white;
+}
+h3 span {
+  font-size: 14px;
+  font-weight: 400;
+  text-decoration: line-through;
+}
+.productTitle {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 10px;
+}
+.productTitle h2 {
+  text-transform: capitalize;
+}
