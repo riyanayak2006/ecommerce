@@ -1,179 +1,140 @@
-<<?php
-    include "db.php";
+<?php
+// DATABASE CONNECTION (PROCEDURAL)
+$conn = mysqli_connect("localhost", "root", "", "ecommerce");
+if (!$conn) {
+    die("Connection failed: " . mysqli_connect_error());
+}
 
-    /* CREATE & UPDATE */
-    if (isset($_POST['save'])) {
-        $name = $_POST['productname'];
-        $price = $_POST['productRate'];
-        $rating = $_POST['productRatings'];
-        $description = $_POST['productDesc'];
+// CREATE OR UPDATE PRODUCT
+if (isset($_POST['save'])) {
+    $product_id  = $_POST['product_id'];
+    $category_id = $_POST['category_id'];
+    $name        = $_POST['product_name'];
+    $price       = $_POST['price'];
+    $stock       = $_POST['stock'];
+    $description = $_POST['description'];
+    $image       = $_POST['image']; // (for now text/image path)
 
-        $imgName = $_FILES['productImg']['name'];
-        $tmpName = $_FILES['productImg']['tmp_name'];
-
-        $imgPath = "";
-
-        if ($imgName != "") {
-            $imgPath = "./images/" . $imgName;
-            move_uploaded_file($tmpName, $imgPath);
-        }
-
-        if ($_POST['id'] == "") {
-            // INSERT
-            $sql = "INSERT INTO products 
-        (productname, productRate, productRatings, productImg, productDesc)
-        VALUES 
-        ('$name', '$price', '$rating', '$imgPath', '$description')";
-        } else {
-            // UPDATE
-            $id = $_POST['id'];
-            $imgQuery = $imgName != "" ? ", productImg='$imgPath'" : "";
-
-            $sql = "UPDATE products SET
-            productname='$name',
-            productRate='$price',
-            productRatings='$rating',
-            productDesc='$description'
-            $imgQuery
-            WHERE productID=$id";
-        }
-
-        mysqli_query($conn, $sql) or die(mysqli_error($conn));
-        header("Location: admin.php");
+    if ($product_id == "") {
+        $query = "INSERT INTO productstable 
+        (`category_id`, `product name`, `price`, `stock`, `description`, `image`)
+        VALUES ('$category_id', '$name', '$price', '$stock', '$description', '$image')";
+    } else {
+        $query = "UPDATE productstable SET
+        `category_id`='$category_id',
+        `product name`='$name',
+        `price`='$price',
+        `stock`='$stock',
+        `description`='$description',
+        `image`='$image'
+        WHERE product_id='$product_id'";
     }
 
+    mysqli_query($conn, $query);
+    header("Location: admin.php");
+}
 
-    /* DELETE */
-    if (isset($_GET['delete'])) {
-        $id = $_GET['delete'];
-        mysqli_query($conn, "DELETE FROM products WHERE productID=$id");
-        header("Location: admin.php");
-    }
+// DELETE PRODUCT
+if (isset($_GET['delete'])) {
+    $id = $_GET['delete'];
+    mysqli_query($conn, "DELETE FROM productstable WHERE product_id='$id'");
+    header("Location: admin.php");
+}
 
-    /* EDIT */
-    $editData = null;
-    if (isset($_GET['edit'])) {
-        $id = $_GET['edit'];
-        $res = mysqli_query($conn, "SELECT * FROM products WHERE productID=$id");
+// EDIT PRODUCT
+$edit = false;
+$product = [
+    "product_id" => "",
+    "category_id" => "",
+    "product name" => "",
+    "price" => "",
+    "stock" => "",
+    "description" => "",
+    "image" => ""
+];
 
-        if (!$res) {
-            die("Query Failed: " . mysqli_error($conn));
-        }
+if (isset($_GET['edit'])) {
+    $edit = true;
+    $id = $_GET['edit'];
+    $result = mysqli_query($conn, "SELECT * FROM productstable WHERE product_id='$id'");
+    $product = mysqli_fetch_assoc($result);
+}
+?>
 
-        $editData = mysqli_fetch_assoc($res);
-    }
-    ?>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin Panel</title>
+    <style>
+        body { font-family: Arial; padding: 30px; }
+        input, textarea { width: 100%; padding: 8px; margin: 5px 0; }
+        button { padding: 10px 15px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 30px; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: center; }
+        th { background: #f4f4f4; }
+        a { text-decoration: none; color: red; }
+    </style>
+</head>
+<body>
 
-    <!DOCTYPE html>
-    <html>
+<h2><?php echo $edit ? "Edit Product" : "Add Product"; ?></h2>
 
-    <head>
-        <title>Admin Panel</title>
-        <style>
-            body {
-                font-family: Arial;
-                padding: 20px;
-            }
+<form method="post">
+    <input type="hidden" name="product_id" value="<?php echo $product['product_id']; ?>">
 
-            form,
-            table {
-                width: 100%;
-                margin-bottom: 30px;
-            }
+    <label>Category ID</label>
+    <input type="number" name="category_id" required value="<?php echo $product['category_id']; ?>">
 
-            input,
-            button {
-                padding: 8px;
-                margin: 5px 0;
-                width: 100%;
-            }
+    <label>Product Name</label>
+    <input type="text" name="product_name" required value="<?php echo $product['product name']; ?>">
 
-            table {
-                border-collapse: collapse;
-            }
+    <label>Price</label>
+    <input type="number" step="0.01" name="price" required value="<?php echo $product['price']; ?>">
 
-            th,
-            td {
-                border: 1px solid #ccc;
-                padding: 10px;
-                text-align: center;
-            }
+    <label>Stock</label>
+    <input type="number" name="stock" required value="<?php echo $product['stock']; ?>">
 
-            img {
-                width: 60px;
-            }
+    <label>Description</label>
+    <textarea name="description"><?php echo $product['description']; ?></textarea>
 
-            .btn {
-                padding: 6px 12px;
-                text-decoration: none;
-            }
-        </style>
-    </head>
+    <label>Image (URL or filename)</label>
+    <input type="text" name="image" value="<?php echo $product['image']; ?>">
 
-    <body>
+    <button type="submit" name="save">Save Product</button>
+</form>
 
-        <h2>Admin – Add / Update Product</h2>
+<h2>Products</h2>
 
-        <form method="POST" enctype="multipart/form-data">
-            <input type="hidden" name="id" value="<?= $editData['productID'] ?? '' ?>">
+<table>
+    <tr>
+        <th>ID</th>
+        <th>Category</th>
+        <th>Name</th>
+        <th>Price</th>
+        <th>Stock</th>
+        <th>Image</th>
+        <th>Actions</th>
+    </tr>
 
-            <label for="">Product Name</label>
-            <input type="text" name="productname" placeholder="Enter the Product Name"
-                value="<?= $editData['productname'] ?? '' ?>" required>
+<?php
+$result = mysqli_query($conn, "SELECT * FROM productstable ORDER BY product_id DESC");
+while ($row = mysqli_fetch_assoc($result)):
+?>
+    <tr>
+        <td><?php echo $row['product_id']; ?></td>
+        <td><?php echo $row['category_id']; ?></td>
+        <td><?php echo $row['product name']; ?></td>
+        <td>$<?php echo $row['price']; ?></td>
+        <td><?php echo $row['stock']; ?></td>
+        <td><?php echo $row['image']; ?></td>
+        <td>
+            <a href="admin.php?edit=<?php echo $row['product_id']; ?>">Edit</a> |
+            <a href="admin.php?delete=<?php echo $row['product_id']; ?>" onclick="return confirm('Delete this product?')">Delete</a>
+        </td>
+    </tr>
+<?php endwhile; ?>
 
-            <label for="">Product price</label>
-            <input type="number" name="productRate" placeholder="Enter the Price"
-                value="<?= $editData['productRate'] ?? '' ?>" required>
+</table>
 
-            <label for="">Product ratings</label>
-            <input type="number" name="productRatings" placeholder="Enter the Rating (1–5)"
-                value="<?= $editData['productRatings'] ?? '' ?>" min="1" max="5" required>
-
-            <label for="">Product image</label>
-            <input type="file" name="productImg">
-
-            <label for="">Product Description</label>
-            <input type="text" name="productDesc" placeholder="Enter the description for the product">
-
-            <button type="submit" name="save">
-                <?= isset($editData) ? "Update Product" : "Add Product" ?>
-            </button>
-        </form>
-
-        <hr>
-
-        <h2>All Products</h2>
-
-        <table>
-            <tr>
-                <th>Image</th>
-                <th>Name</th>
-                <th>Price</th>
-                <th>Rating</th>
-                <th>Description</th>
-                <th>Actions</th>
-            </tr>
-
-            <?php
-            $result = mysqli_query($conn, "SELECT * FROM products");
-
-            while ($row = mysqli_fetch_assoc($result)) {
-                echo "
-  <tr>
-    <td><img src='{$row['productImg']}'></td>
-    <td>{$row['productname']}</td>
-    <td>₹{$row['productRate']}</td>
-    <td>{$row['productRatings']}/5</td>
-    <td>{$row['productDesc']}</td>
-    <td>
-      <a class='btn' href='admin.php?edit={$row['productID']}'>Edit</a>
-      <a class='btn' href='admin.php?delete={$row['productID']}' onclick='return confirm(\"Delete?\")'>Delete</a>
-    </td>
-  </tr>";
-            }
-            ?>
-        </table>
-
-    </body>
-
-    </html>
+</body>
+</html>
